@@ -56,7 +56,18 @@ int main(){
 
     ComplexVec res = refft::D2H(d_alpha , N);
     for(unsigned int i = 0; i< res.size(); i++){
-      if(!(abs(res_ref[i].real() - res[i].real()) < 0.001))std::cout << "wrong " <<std::endl;
+      if(!(abs(res_ref[i].real() - res[i].real()) < 0.001)){
+        std::cout << "Wrong value in index " << i << std::endl;
+        std::cout << "Reference : " << res_ref[i].real() << std::endl;
+        std::cout << "Calculated : " << res[i].real() <<std::endl;
+        std::exit(0);
+      }
+      if(!(abs(res_ref[i].imag() - res[i].imag()) < 0.001)){
+        std::cout << "Wrong value in index " << i << std::endl;
+        std::cout << "Reference : " << res_ref[i].imag() << std::endl;
+        std::cout << "Calculated : " << res_ref[i].imag() <<std::endl;
+        std::exit(0);
+      }
     }
     refft::DeviceFree(d_alpha);
     std::cout << "Duration of StudentFft : "<< elapsed_sec << "(sec)"<< std::endl;

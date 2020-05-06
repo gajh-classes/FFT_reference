@@ -164,7 +164,6 @@ void ExecStudentFft(std::complex<float> *a, int N) {
   dim3 gridDim(N/2/256);
   bitReverse<<<gridDim, blockDim>>>(a,N);
   for (int i = 1; i < N; i *= 2) {
-    std::cout << i << std::endl;
     FftStudent<<<gridDim, blockDim>>>((cuFloatComplex*)a,i, N);
     CudaCheckError();
   }
