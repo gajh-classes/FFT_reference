@@ -72,6 +72,14 @@ Normally execute the application binary, and it will attach to GPGPU-sim properl
 cd /root/FFT_release/build/run
 ./../fft_release
 ```
+At the end of running, the running time and simulation cycle of the code is displayed like :
+```bash
+GPGPU-Sim: detected inactive GPU simulation thread
+Total_simulation_cycle : xxxxxxx (cycles)
+Duration of StudentFft : xxxxx (sec)
+GPGPU-Sim: *** exit detected ***
+```
+Code will be evaluated with the cycles displayed above.
 
 ##### makestep.sh
 in `/root/FFT_release`, automated script is provided. You may use the script to skip the above procedures.
