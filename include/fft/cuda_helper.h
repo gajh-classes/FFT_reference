@@ -14,6 +14,10 @@ namespace refft {
 using HostVec = std::vector<uint32_t>;
 using ComplexVec = std::vector<std::complex<float>>;
 
+extern int blocksize;
+extern int gridsize;
+
+
 void __cudaCheckError(const char* file, const int line);
 // A wrapper of cudaDeviceSynchronize() to be called from the host side.
 void CudaHostSync();

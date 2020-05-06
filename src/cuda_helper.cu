@@ -20,6 +20,9 @@ namespace refft {
     }                                                                \
   } while (0)
 
+int blocksize;
+int gridsize;
+
 void __cudaCheckError(const char* file, const int line) {
   cudaError err = cudaDeviceSynchronize();
   if (cudaSuccess != err) {

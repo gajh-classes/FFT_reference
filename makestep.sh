@@ -1,3 +1,7 @@
+#!/bin/bash
+
+## This is meant to be used in docker image, "michael604/comparch_430.636_spring2020"
+
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64
 
 rm -rf build&&mkdir build;

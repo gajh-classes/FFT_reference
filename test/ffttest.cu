@@ -36,9 +36,11 @@ void ReadFile(ComplexVec a, std::string file_name) {
   input.close();
 }
 
-int main() {
-  int N = 32768;
-  for (int iter = 0; iter < 1; iter++) {
+int main(int argc, char **argv){
+  refft::blocksize = std::stoi(argv[1]);
+  refft::gridsize = std::stoi(argv[2]);
+  int N = 32768; 
+  for(int iter = 0; iter < 1; iter++){
     ComplexVec h_a(N);
     ComplexVec res_ref(N);
     ReadFile(h_a, "Polynomial_Coeff.txt");
