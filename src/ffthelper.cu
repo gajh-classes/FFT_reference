@@ -1,4 +1,3 @@
-#pragma once
 #include "cuda_helper.h"
 #include "ffthelper.h"
 #include "utils.h"
@@ -148,7 +147,7 @@ __global__ void Hadamard(cuFloatComplex *a, cuFloatComplex *b, int N){
   }
 }
 
-void ExecFft(std::complex<float> *a, int N) {
+void FftHelper::ExecFft(std::complex<float> *a, int N) {
   dim3 blockDim(256);
   dim3 gridDim(N/2/256);
   bitReverse<<<gridDim, blockDim>>>(a,N);
@@ -159,7 +158,7 @@ void ExecFft(std::complex<float> *a, int N) {
   CudaCheckError();
 }
 
-void ExecStudentFft(std::complex<float> *a, int N) {
+void FftHelper::ExecStudentFft(std::complex<float> *a, int N) {
   dim3 blockDim(256);
   dim3 gridDim(N/2/256);
   bitReverse<<<gridDim, blockDim>>>(a,N);
@@ -170,7 +169,7 @@ void ExecStudentFft(std::complex<float> *a, int N) {
   CudaCheckError();
 }
 
-void ExecIfft(std::complex<float> *a, int N) {
+void FftHelper::ExecIfft(std::complex<float> *a, int N) {
   dim3 blockDim(1024);
   dim3 gridDim(N/2/1024);
   for (int i = N / 2; i > 0; i >>= 1) {
@@ -180,7 +179,7 @@ void ExecIfft(std::complex<float> *a, int N) {
   CudaCheckError();
 }
 
-void ExecStudentIfft(std::complex<float> *a, int N) {
+void FftHelper::ExecStudentIfft(std::complex<float> *a, int N) {
   dim3 blockDim(1024);
   dim3 gridDim(N/2/1024);
   for (int i = N / 2; i > 0; i >>= 1) {
@@ -190,7 +189,7 @@ void ExecStudentIfft(std::complex<float> *a, int N) {
   CudaCheckError();
 }
 
-void Mult(std::complex<float> *a, std::complex<float> *b, int N) {
+void FftHelper::Mult(std::complex<float> *a, std::complex<float> *b, int N) {
   dim3 blockDim(1024);
   dim3 gridDim(N/1024);
   Hadamard<<<gridDim, blockDim>>>((cuFloatComplex*)a,(cuFloatComplex*)b, N);  

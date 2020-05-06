@@ -38,7 +38,7 @@ set(CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG} -G -O0 -lcudart")
 add_executable(fft_release 
   src/ffthelper.cu
   src/cuda_helper.cu
-  ffttest.cu
+  test/ffttest.cu
 )
 
 target_include_directories(fft_release
