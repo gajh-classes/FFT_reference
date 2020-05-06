@@ -1,7 +1,7 @@
 #pragma once
 
-#include <iostream>
 #include <complex>
+#include <iostream>
 #include <vector>
 
 #ifndef NDEBUG
@@ -20,7 +20,8 @@ void CudaHostSync();
 void* DeviceMalloc(size_t len);
 void* DeviceMalloc(const std::vector<std::complex<float>> input);
 // copy device input to vector
-std::vector<std::complex<float>> D2H(const std::complex<float>* input, size_t elems);
+std::vector<std::complex<float>> D2H(const std::complex<float>* input,
+                                     size_t elems);
 // Convert device pointer to ZZs or a ZZ.
 void DeviceFree(uint32_t* p);
 void DeviceFree(bool* p);
