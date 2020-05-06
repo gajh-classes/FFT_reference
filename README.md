@@ -3,7 +3,24 @@
 This is the reference fast fourier transform(fft) code for computer architecture class 2020.\
 Find "ExecFft" function in src/ffthelper.cu, where the radix-2 colley tukey algorithm is implemented as a reference code. You are asked to change the function to optimize for the GPU architecture, using the gpgpu-sim simulator.
 
+## Overview
 
+In this project, we will use docker to setup gpgpu-sim environment. 
+
+1. Pull docker images.
+2. Build FFT.
+3. set environmental variables.
+4. run 
+
+## Docker images 
+
+The following instructions are based on the Ubuntu 18.04 LTS. 
+
+```
+$ apt-get install docker.io
+$ docker pull michael604/scal2020_gpgpu_sim
+$ docker run -it michael604/scal2020_gpgpu_sim /bin/bash
+```
 
 ## How to build
 in */fft_release* directory,
@@ -44,6 +61,10 @@ You can modify every part of the code and add any other custom function. But it 
 * When you run the application binary with gpgpu-sim, execution time of the code will be displayed. The execution time of your optimized code and application will be evaluated using the time displayed at the end.
 
 * If it's necessary, you are allowed to modify the CMakeLists.txt. However, do not modify any important flags, such as optimizaiton level flags. 
+
+# Reporting Content
+
+* Describe what you have done.
 
 ## Contact
 
