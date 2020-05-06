@@ -1,7 +1,7 @@
 # CUDA FFT Reference code
 
-This is the reference fast fourier transform(fft) code for computer architecture class 2020.\
-Find "ExecFft" function in src/ffthelper.cu, where the radix-2 colley tukey algorithm is implemented as a reference code. You are asked to change the function to optimize for the GPU architecture, using the gpgpu-sim simulator.
+This is the reference fast fourier transform(FFT) code for computer architecture class 2020.\
+Find "ExecFft" function in src/ffthelper.cu, where the radix-2 cooley tukey algorithm is implemented as a reference code. You are asked to change the function to optimize for the GPU architecture, using the gpgpu-sim simulator.
 
 
 
@@ -45,7 +45,7 @@ make -j
 Binary file named `fft_release` will be generated in `/root/FFT_release/build`
 
 ### 2. Run
-You need to set correct environment variable in order to properly attach the CUDA application to GPGPU-sim.You also have to locate the correct GPGPU-sim configuration files and matrix data.
+You need to set the correct environment variable to properly attach the CUDA application to GPGPU-sim. You also have to locate the correct GPGPU-sim configuration files and matrix data.
 
 ##### Set Environmental Variable
 You first need to set environmental variables correctly.\
@@ -64,7 +64,7 @@ $ mkdir build/run && cd build/run
 $ cp /root/gpgpu-sim_distrubute/configs/tested-cfgs/{SM_NUM}/* ./
 $ cp /root/FFT_release/test/*.txt ./
 ```
-We will use `SM2_GTX480` configuration as default machine configuration for GPGPU-sim. We do not need to run power simulation, so you need to change the `power_simulation_enabled` value to 0 in `gpgpusim.config` file.
+We will use `SM2_GTX480` configuration as a default machine configuration for GPGPU-sim. We do not need to run power simulation, so you need to change the `power_simulation_enabled` value to 0 in `gpgpusim.config` file.
 
 ##### Run CUDA Application
 Normally execute the application binary, and it will attach to GPGPU-sim properly.
@@ -79,7 +79,7 @@ Total_simulation_cycle : xxxxxxx (cycles)
 Duration of StudentFft : xxxxx (sec)
 GPGPU-Sim: *** exit detected ***
 ```
-Code will be evaluated with the cycles displayed above.
+The code will be evaluated with the cycles displayed above.
 
 ##### makestep.sh
 in `/root/FFT_release`, automated script is provided. You may use the script to skip the above procedures.
@@ -93,7 +93,7 @@ You can modify every part of the code and add any other custom function. But it 
 
 * When you run the application binary with gpgpu-sim, execution time of the code will be displayed. The execution time of your optimized code and application will be evaluated using the time displayed at the end.
 
-* If it's necessary, you are allowed to modify the CMakeLists.txt. However, do not modify any important flags, such as optimizaiton level flags. 
+* If it's necessary, you are allowed to modify the CMakeLists.txt. However, do not modify any important flags, such as optimization level flags. 
 
 
 
@@ -103,7 +103,7 @@ You can modify every part of the code and add any other custom function. But it 
 
 ## Contact
 
-If you find some errors or issues in the code, fill free to e-mail us. Our e-mails are posted in our class discription page.
+If you find some errors or issues in the code, fill free to e-mail us. Our e-mails are posted on our class description page.
 
 Michael Jaemin Kim: michael604@scale.snu.ac.kr\
 Sangpyo Kim: spkim@scale.snu.ac.kr\
