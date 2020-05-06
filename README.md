@@ -34,7 +34,7 @@ This part will explain necessary procedures to properly build FFT_release CDUA a
 We also provide automated script file `makestep.sh`, so you may also use the script.\
 (Directory names in the following explanation is based on the [docker image][docker_image] that is provided.
 
-### Build
+### 1. Build
 in `/root/FFT_release` directory,
 ```bash
 mkdir build && cd build
@@ -44,7 +44,7 @@ make -j
 ```
 Binary file named `fft_release` will be generated in `/root/FFT_release/build`
 
-### Run
+### 2. Run
 You need to set correct environment variable in order to properly attach the CUDA application to GPGPU-sim.You also have to locate the correct GPGPU-sim configuration files and matrix data.
 
 ##### Set Environmental Variable
@@ -89,7 +89,7 @@ You can modify every part of the code and add any other custom function. But it 
 
 
 
-# Report
+## Report
 
 * Describe what you have done.
 
