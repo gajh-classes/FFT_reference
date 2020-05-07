@@ -20,8 +20,8 @@ namespace refft {
     }                                                                \
   } while (0)
 
-int blocksize;
-int gridsize;
+int FFTblocksize = 256;
+int iFFTblocksize = 1024;
 
 void __cudaCheckError(const char* file, const int line) {
   cudaError err = cudaDeviceSynchronize();

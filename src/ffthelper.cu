@@ -148,8 +148,8 @@ __global__ void Hadamard(cuFloatComplex *a, cuFloatComplex *b, int N) {
 }
 
 void FftHelper::ExecFft(std::complex<float> *a, int N) {
-  dim3 blockDim(refft::blocksize);
-  dim3 gridDim(N/2/refft::gridsize);
+  dim3 blockDim(refft::FFTblocksize);
+  dim3 gridDim(N/2/refft::FFTblocksize);
   bitReverse<<<gridDim, blockDim>>>(a,N);
   for (int i = 1; i < N; i *= 2) {
     Fft<<<gridDim, blockDim>>>((cuFloatComplex *)a, i, N);
@@ -159,8 +159,8 @@ void FftHelper::ExecFft(std::complex<float> *a, int N) {
 }
 
 void FftHelper::ExecStudentFft(std::complex<float> *a, int N) {
-  dim3 blockDim(refft::blocksize);
-  dim3 gridDim(N/2/refft::gridsize);
+  dim3 blockDim(refft::FFTblocksize);
+  dim3 gridDim(N/2/refft::FFTblocksize);
   bitReverse<<<gridDim, blockDim>>>(a,N);
   for (int i = 1; i < N; i *= 2) {
     FftStudent<<<gridDim, blockDim>>>((cuFloatComplex *)a, i, N);
@@ -170,8 +170,8 @@ void FftHelper::ExecStudentFft(std::complex<float> *a, int N) {
 }
 
 void FftHelper::ExecIfft(std::complex<float> *a, int N) {
-  dim3 blockDim(refft::blocksize);
-  dim3 gridDim(N/2/refft::gridsize);
+  dim3 blockDim(refft::iFFTblocksize);
+  dim3 gridDim(N/2/refft::iFFTblocksize);
   for (int i = N / 2; i > 0; i >>= 1) {
     Ifft<<<gridDim, blockDim>>>((cuFloatComplex *)a, i, N);
   }
@@ -180,8 +180,8 @@ void FftHelper::ExecIfft(std::complex<float> *a, int N) {
 }
 
 void FftHelper::ExecStudentIfft(std::complex<float> *a, int N) {
-  dim3 blockDim(refft::blocksize);
-  dim3 gridDim(N/2/refft::gridsize);
+  dim3 blockDim(refft::iFFTblocksize);
+  dim3 gridDim(N/2/refft::iFFTblocksize);
   for (int i = N / 2; i > 0; i >>= 1) {
     IfftStudent<<<gridDim, blockDim>>>((cuFloatComplex *)a, i, N);
   }
@@ -190,8 +190,8 @@ void FftHelper::ExecStudentIfft(std::complex<float> *a, int N) {
 }
 
 void FftHelper::Mult(std::complex<float> *a, std::complex<float> *b, int N) {
-  dim3 blockDim(refft::blocksize);
-  dim3 gridDim(N/refft::gridsize);
+  dim3 blockDim(refft::iFFTblocksize);
+  dim3 gridDim(N/refft::iFFTblocksize);
   Hadamard<<<gridDim, blockDim>>>((cuFloatComplex*)a,(cuFloatComplex*)b, N);  
   CudaCheckError();
 }

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # when building the FFT_release, refernce to the actual location of the libcudart.so
+# reference the GPGPU-sim's libcudart.so only when executing the binary
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64
 
 rm -rf build&&mkdir build;
