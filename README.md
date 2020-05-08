@@ -64,6 +64,7 @@ The default `BUILD_TYPE` in the [docker image][docker_image] is release.
 
 ##### Locate Configuration Files & Matrix Data
 You need to locate `config_{ARCH}_islip.cnt` & `gpgpusim.config` files from `/gpgpu-sim_distribution/configs/tested-cfgs`, to the directory that you are going to run the application.
+Also, text files that contain the matrix data should also be located properly. The size of the matrix will be fixed as `32768`.
 
 In `/root/FFT_reference` directory,
 ```bash
@@ -75,10 +76,10 @@ We will use [`SM6_TITANX`][machine_config] configuration as a default machine co
 
 ##### Run CUDA Application
 Normally execute the application binary, and it will attach to GPGPU-sim properly.\
-You can explicitly set the `blocksize` of the FFT and iFFT for your function, by setting the input value when running the binary. The default value for FFT `blocksize` is 256, and iFFT `bocksize` is 1024. The `gridsize` of the FFT, iFFT is calculated as `N/2/blocksize`. You may change the value of `gridsize` by modifying the code in `/root/src/ffthelper.cu`.
+You can explicitly set the `blocksize` of the FFT for your function, by setting the input value when running the binary. The default value for FFT `blocksize` is 256. The `gridsize` of the FFT is calculated as `N/2/blocksize`. You may change the value of `gridsize` by modifying the code in `/root/src/ffthelper.cu`.
 ```bash
 $ cd /root/FFT_reference/build/run
-$ ./../fft_reference --fftb {FFT_blocksize} --ifftb {iFFT_blocksize}
+$ ./../fft_reference --fftb {FFT_blocksize}
 ```
 
 At the end of the application execution, `gpgpu_simulation_total_cycle` is displayed as the following log. 
@@ -104,7 +105,7 @@ in `/root/FFT_reference`, automated script `makestep.sh` is provided. You may us
 You can take either of the following two directions in conducting
 this term project:
 
-1. SW only approach: Optimize the **FFT / iFFT** code with higher performance in the given `SM6_TITANX` Pascal configuration. You can modify every part of the code and add any additional custom functions. However, it is necessary to explain your implementation in your report.
+1. SW only approach: Optimize the **FFT** code with higher performance in the given `SM6_TITANX` Pascal configuration. The matrix size that you have to optimize your code with, is fixed as `32768`. Else than the configuration values, you can modify every part of the code, and add any additional custom functions. However, it is necessary to explain your implementation in your report.
 
 2. HW modification: Modify the machine description file(`SM6_TITANX`) or GPGPU-sim simulator to suggest and implement a better hardware.
 
