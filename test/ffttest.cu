@@ -22,7 +22,7 @@ using refft::utils::genZero;
 
 static void parse_opt(int argc, char **argv);
 static void print_help(const char* prog_name);
-void ReadFile(ComplexVec a, std::string file_name);
+void ReadFile(ComplexVec & a, std::string file_name);
 
 int main(int argc, char **argv){
 	parse_opt(argc, argv);
@@ -35,22 +35,21 @@ int main(int argc, char **argv){
     ReadFile(res_ref, "Output_Coeff.txt");
     std::complex<float>* d_alpha =
         (std::complex<float>*)refft::DeviceMalloc(h_a);
-
     refft::FftHelper::ExecStudentFft(d_alpha, N);
     refft::CudaHostSync();
-
     ComplexVec res = refft::D2H(d_alpha, N);
     for (unsigned int i = 0; i < res.size(); i++) {
-      if (!(abs(res_ref[i].real() - res[i].real()) < 0.001)) {
-        std::cout << "Wrong value in index " << i << std::endl;
+      if (!(abs(res_ref[i].real() - res[i].real()) < MAX(abs(0.001*res_ref[i].real()),0.001))) {
+        std::cout << "Wrong real value in index " << i << std::endl;
         std::cout << "Reference : " << res_ref[i].real() << std::endl;
         std::cout << "Calculated : " << res[i].real() << std::endl;
         std::exit(0);
       }
-      if (!(abs(res_ref[i].imag() - res[i].imag()) < 0.001)) {
-        std::cout << "Wrong value in index " << i << std::endl;
+      if (!(abs(res_ref[i].imag() - res[i].imag()) < MAX(abs(0.001 *res_ref[i].imag()),0.001))) {
+        std::cout << abs(res_ref[i].imag() - res[i].imag()) <<std::endl;
+        std::cout << "Wrong imag value in index " << i << std::endl;
         std::cout << "Reference : " << res_ref[i].imag() << std::endl;
-        std::cout << "Calculated : " << res_ref[i].imag() << std::endl;
+        std::cout << "Calculated : " << res[i].imag() << std::endl;
         std::exit(0);
       }
     }
@@ -107,7 +106,7 @@ static void print_help(const char* prog_name) {
   printf("  --help:  print help page \n");
 }
 
-void ReadFile(ComplexVec a, std::string file_name) {
+void ReadFile(ComplexVec &a, std::string file_name) {
   std::ifstream input;
   input.open(file_name);
   if (!input.good()) {
