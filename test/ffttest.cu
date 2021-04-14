@@ -20,45 +20,76 @@ using ComplexVec = std::vector<std::complex<float>>;
 using refft::utils::genComp;
 using refft::utils::genZero;
 
-static void parse_opt(int argc, char **argv);
+static void parse_opt(int argc, char **argv, int& N, int &num_images, int &num_iters);
 static void print_help(const char* prog_name);
 void ReadFile(ComplexVec & a, std::string file_name);
 
-int main(int argc, char **argv){
-	parse_opt(argc, argv);
+ComplexVec GetRandomComplexVec(int N){
+  ComplexVec randTemp(N);
+  for(int i = 0; i < N; i++){
+    randTemp[i] = {static_cast<float>(rand())/ static_cast<float>(RAND_MAX), static_cast<float>(rand())/ static_cast<float>(RAND_MAX)};
+  }
+  return randTemp;
+}
 
+int main(int argc, char **argv){
   int N = 32768; 
-  for(int iter = 0; iter < 1; iter++){
-    ComplexVec h_a(N);
-    ComplexVec res_ref(N);
-    ReadFile(h_a, "Polynomial_Coeff.txt");
-    ReadFile(res_ref, "Output_Coeff.txt");
+  int num_images = 32;
+  int num_iter = 1;
+	parse_opt(argc, argv, N, num_images, num_iter);
+  int input_size = N * num_images;
+  std::cout << "N :" << N  << std::endl;
+  std::cout << "num_images :" << num_images  << std::endl;
+  std::cout << "num_iter :" << num_iter  << std::endl;
+  for(int iter = 0; iter < num_iter; iter++){
+    auto h_a = GetRandomComplexVec(N * num_images);    
     std::complex<float>* d_alpha =
-        (std::complex<float>*)refft::DeviceMalloc(h_a);
-    refft::FftHelper::ExecStudentFft(d_alpha, N);
+        (std::complex<float>*)refft::DeviceMalloc(h_a); 
+    std::complex<float>* d_alpha_ref =
+        (std::complex<float>*)refft::DeviceMalloc(h_a); 
     refft::CudaHostSync();
-    ComplexVec res = refft::D2H(d_alpha, N);
-    for (unsigned int i = 0; i < res.size(); i++) {
-      if (!(abs(res_ref[i].real() - res[i].real()) < MAX(abs(0.001*res_ref[i].real()),0.001))) {
+    refft::FftHelper::ExecFft(d_alpha, N, num_images);
+    {
+      refft::CudaTimer t("CUFFT");
+    refft::FftHelper::ExecCUFFT(d_alpha_ref, N, num_images);
+    }
+    refft::CudaHostSync();
+
+    ComplexVec res_ref = refft::D2H(d_alpha, input_size);
+    ComplexVec res_cufft = refft::D2H(d_alpha_ref, input_size);
+    refft::CudaHostSync();
+
+    refft::FftHelper::ExecIfft(d_alpha, N, num_images);
+    {
+      refft::CudaTimer t("CUIFFT");
+    refft::FftHelper::ExecCUIFFT(d_alpha_ref, N, num_images);
+    }
+    refft::CudaHostSync();
+
+    ComplexVec ires_ref = refft::D2H(d_alpha, N);
+    ComplexVec ires_cufft = refft::D2H(d_alpha_ref, N);
+    for (unsigned int i = 0; i < res_ref.size(); i++) {
+      if (!(abs(res_ref[i].real() - res_cufft[i].real()) < MAX(abs(0.001*res_ref[i].real()),0.001))) {
         std::cout << "Wrong real value in index " << i << std::endl;
         std::cout << "Reference : " << res_ref[i].real() << std::endl;
-        std::cout << "Calculated : " << res[i].real() << std::endl;
-        std::exit(0);
+        std::cout << "Calculated : " << res_cufft[i].real() << std::endl;
+        //std::exit(0);
       }
-      if (!(abs(res_ref[i].imag() - res[i].imag()) < MAX(abs(0.001 *res_ref[i].imag()),0.001))) {
-        std::cout << abs(res_ref[i].imag() - res[i].imag()) <<std::endl;
+      if (!(abs(res_ref[i].imag() - res_cufft[i].imag()) < MAX(abs(0.001 *res_ref[i].imag()),0.001))) {
+        std::cout << abs(res_ref[i].imag() - res_cufft[i].imag()) <<std::endl;
         std::cout << "Wrong imag value in index " << i << std::endl;
         std::cout << "Reference : " << res_ref[i].imag() << std::endl;
-        std::cout << "Calculated : " << res[i].imag() << std::endl;
-        std::exit(0);
+        std::cout << "Calculated : " << res_cufft[i].imag() << std::endl;
+        //std::exit(0);
       }
     }
     refft::DeviceFree(d_alpha);
+    refft::DeviceFree(d_alpha_ref);
   }
   return 0;
 }
 
-static void parse_opt(int argc, char **argv) {
+static void parse_opt(int argc, char **argv, int& N, int &num_images, int &num_iters) {
   int c;
   //int digit_optind = 0;
 	while (1) {
@@ -67,11 +98,13 @@ static void parse_opt(int argc, char **argv) {
 		static struct option long_options[] = {
 			{"fftb",		required_argument, 0, '0'},
 			{"ifftb",   required_argument, 0, '2'},
-			{"help",  required_argument, 0, 'h'},
+			{"numimages",   required_argument, 0, 'm'},
+			{"N",   required_argument, 0, 'N'},
+			{"numiter",   required_argument, 0, 'i'},
+			{"help",  required_argument, 0, 'h'}, 
 			{0,       0,                 0,  0 }
 		};
-
-		c = getopt_long(argc, argv, "0:2:h",
+		c = getopt_long(argc, argv, "0:2:h:N:i:h",
 				long_options, &option_index);
 		if (c == -1)
 		break; // while(1) break;
@@ -88,6 +121,15 @@ static void parse_opt(int argc, char **argv) {
 			break;
     case '2':
       refft::iFFTblocksize = atoi(optarg);
+      break;
+    case 'm':
+      num_images = atoi(optarg);
+      break;
+    case 'N':
+      N = atoi(optarg);
+      break;
+    case 'i':
+      num_iters = atoi(optarg);
       break;
 		case 'h':
 		default:

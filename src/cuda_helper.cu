@@ -1,5 +1,5 @@
 #include "cuda_helper.h"
-
+#include "nvToolsExt.h"
 #include <assert.h>
 #include <omp.h>
 #include <time.h>
@@ -49,6 +49,12 @@ void* DeviceMalloc(const std::vector<std::complex<float>> input) {
   return dst;
 }
 
+void CudaNvtxStart(std::string msg){
+nvtxRangePushA(msg.c_str());
+}
+void CudaNvtxStop(){
+nvtxRangePop();
+}
 std::vector<std::complex<float>> D2H(const std::complex<float>* input,
                                      size_t elems) {
   std::vector<std::complex<float>> host(elems);

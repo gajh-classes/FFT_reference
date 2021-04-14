@@ -34,32 +34,16 @@ __device__ void butt_fft(cuFloatComplex *a, cuFloatComplex *b,
   *a = cuCaddf(*a, U);
 }
 
-__global__ void Fft(cuFloatComplex *a, const int m, const int N) {
-  for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < (N / 2);
+__global__ void Fft(cuFloatComplex *a, const int m, const int N, const int num_images) {
+  for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < (N / 2) * num_images;
        i += blockDim.x * gridDim.x) {
     // index in N/2 range
     int N_idx = i % (N / 2);
+    int image_idx = i / (N / 2);
     // i'th block
     int m_idx = N_idx / m;
     // base address
-    cuFloatComplex *a_np = a;
-    int t_idx = N_idx % m;
-    cuFloatComplex *a_x = a_np + 2 * m_idx * m + t_idx;
-    cuFloatComplex *a_y = a_x + m;
-    cuFloatComplex w = twiddle(-M_PI * (double)t_idx / (double)m);
-    butt_fft(a_x, a_y, w);
-  }
-}
-
-__global__ void FftStudent(cuFloatComplex *a, const int m, const int N) {
-  for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < (N / 2) * 1;
-       i += blockDim.x * gridDim.x) {
-    // index in N/2 range
-    int N_idx = i % (N / 2);
-    // i'th block
-    int m_idx = N_idx / m;
-    // base address
-    cuFloatComplex *a_np = a;
+    cuFloatComplex *a_np = a + image_idx * N;
     int t_idx = N_idx % m;
     cuFloatComplex *a_x = a_np + 2 * m_idx * m + t_idx;
     cuFloatComplex *a_y = a_x + m;
@@ -79,15 +63,16 @@ __device__ void butt_ifft(cuFloatComplex *a, cuFloatComplex *b,
   (*b).y /= 2.0;
 }
 
-__global__ void Ifft(cuFloatComplex *a, const int m, const int N) {
-  for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < (N / 2);
+__global__ void Ifft(cuFloatComplex *a, const int m, const int N, const int num_images) {
+  for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < (N / 2) * num_images;
        i += blockDim.x * gridDim.x) {
     // index in N/2 range
     int N_idx = i % (N / 2);
+    int image_idx = i / (N / 2);
     // i'th block
     int m_idx = N_idx / m;
     // base address
-    cuFloatComplex *a_np = a;
+    cuFloatComplex *a_np = a + image_idx * N;
     int t_idx = N_idx % m;
     cuFloatComplex *a_x = a_np + 2 * m_idx * m + t_idx;
     cuFloatComplex *a_y = a_x + m;
@@ -96,29 +81,13 @@ __global__ void Ifft(cuFloatComplex *a, const int m, const int N) {
   }
 }
 
-__global__ void IfftStudent(cuFloatComplex *a, const int m, const int N) {
-  for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < (N / 2);
-       i += blockDim.x * gridDim.x) {
-    // index in N/2 range
-    int N_idx = i % (N / 2);
-    // i'th block
-    int m_idx = N_idx / m;
-    // base address
-    cuFloatComplex *a_np = a;
-    int t_idx = N_idx % m;
-    cuFloatComplex *a_x = a_np + 2 * m_idx * m + t_idx;
-    cuFloatComplex *a_y = a_x + m;
-    cuFloatComplex w = twiddle(M_PI * (double)t_idx / (double)m);
-    butt_ifft(a_x, a_y, w);
-  }
-}
-
-__global__ void bitReverse(std::complex<float> *a, int N) {
-  for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < (N);
+__global__ void bitReverse(std::complex<float> *a, int N, int num_images) {
+  for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < (N) * num_images;
        i += blockDim.x * gridDim.x) {
     int logN = __log2f(N);
     int N_idx = i % N;
-    std::complex<float> *a_x = a;
+    int image_idx = i / N;
+    std::complex<float> *a_x = a + N * image_idx;
     int revN = __brev(N_idx) >> (32 - logN);
     if (revN > N_idx) {
       std::complex<float> temp = a_x[N_idx];
@@ -147,45 +116,24 @@ __global__ void Hadamard(cuFloatComplex *a, cuFloatComplex *b, int N) {
   }
 }
 
-void FftHelper::ExecFft(std::complex<float> *a, int N) {
+void FftHelper::ExecFft(std::complex<float> *a, const int N, const int num_images) {
   dim3 blockDim(refft::FFTblocksize);
   dim3 gridDim(N/2/refft::FFTblocksize);
-  bitReverse<<<gridDim, blockDim>>>(a,N);
+  bitReverse<<<gridDim, blockDim>>>(a,N, num_images);
   for (int i = 1; i < N; i *= 2) {
-    Fft<<<gridDim, blockDim>>>((cuFloatComplex *)a, i, N);
+    Fft<<<gridDim, blockDim>>>((cuFloatComplex *)a, i, N, num_images);
     CudaCheckError();
   }
   CudaCheckError();
 }
 
-void FftHelper::ExecStudentFft(std::complex<float> *a, int N) {
-  dim3 blockDim(refft::FFTblocksize);
-  dim3 gridDim(N/2/refft::FFTblocksize);
-  bitReverse<<<gridDim, blockDim>>>(a,N);
-  for (int i = 1; i < N; i *= 2) {
-    FftStudent<<<gridDim, blockDim>>>((cuFloatComplex *)a, i, N);
-    CudaCheckError();
-  }
-  CudaCheckError();
-}
-
-void FftHelper::ExecIfft(std::complex<float> *a, int N) {
+void FftHelper::ExecIfft(std::complex<float> *a, const int N, const int num_images) {
   dim3 blockDim(refft::iFFTblocksize);
   dim3 gridDim(N/2/refft::iFFTblocksize);
   for (int i = N / 2; i > 0; i >>= 1) {
-    Ifft<<<gridDim, blockDim>>>((cuFloatComplex *)a, i, N);
+    Ifft<<<gridDim, blockDim>>>((cuFloatComplex *)a, i, N, num_images);
   }
-  bitReverse<<<gridDim, blockDim>>>(a, N);
-  CudaCheckError();
-}
-
-void FftHelper::ExecStudentIfft(std::complex<float> *a, int N) {
-  dim3 blockDim(refft::iFFTblocksize);
-  dim3 gridDim(N/2/refft::iFFTblocksize);
-  for (int i = N / 2; i > 0; i >>= 1) {
-    IfftStudent<<<gridDim, blockDim>>>((cuFloatComplex *)a, i, N);
-  }
-  bitReverse<<<gridDim, blockDim>>>(a, N);
+  bitReverse<<<gridDim, blockDim>>>(a, N, num_images);
   CudaCheckError();
 }
 
@@ -194,5 +142,37 @@ void FftHelper::Mult(std::complex<float> *a, std::complex<float> *b, int N) {
   dim3 gridDim(N/refft::iFFTblocksize);
   Hadamard<<<gridDim, blockDim>>>((cuFloatComplex*)a,(cuFloatComplex*)b, N);  
   CudaCheckError();
+}
+
+void FftHelper::ExecCUFFT(std::complex<float> *a, const int N, const int num_images) {
+  cufftHandle plan;
+  //int dim[1] = {N};
+  //cufftPlanMany(&plan,1,dim,NULL,1,1,NULL,1,1,CUFFT_C2C,num_images);
+  {
+    CudaTimer t("Planning");
+  if(cufftPlan1d(&plan,N,CUFFT_C2C,num_images)!=CUFFT_SUCCESS){
+    std::cout << "CUFFT ERROR : PLAN ERROR" << std::endl;
+    return;
+  }
+  }
+  {
+    CudaTimer t("Execution");
+  if(cufftExecC2C(plan,(cuComplex *) a, (cuComplex *) a, CUFFT_FORWARD)!=CUFFT_SUCCESS){
+    std::cout << "CUFFT ERROR : CUFFT ERROR" << std::endl;
+    return;
+  }
+  }
+}
+
+void FftHelper::ExecCUIFFT(std::complex<float> *a, const int N, const int num_images) {
+  cufftHandle plan;
+  if(cufftPlan1d(&plan,N,CUFFT_C2C,num_images)!=CUFFT_SUCCESS){
+    std::cout << "CUFFT ERROR : PLAN ERROR" << std::endl;
+    return;
+  }
+  if(cufftExecC2C(plan,(cuComplex *) a, (cuComplex *) a, CUFFT_INVERSE)!=CUFFT_SUCCESS){
+    std::cout << "CUFFT ERROR : CUFFT ERROR" << std::endl;
+    return;
+  }
 }
 }  // namespace refft
