@@ -21,8 +21,8 @@ using ComplexVec = std::vector<std::complex<float>>;
 static std::random_device rd;
 static std::mt19937 fre(rd());
 static std::uniform_real_distribution<float> fi(0.0, 1.0);
-static auto genComp = [&]() { return std::complex<float>(fi(fre), fi(fre)); };
-static auto genZero = [&]() { return std::complex<float>(0, 0); };
+static auto genComp = []() { return std::complex<float>(fi(fre), fi(fre)); };
+static auto genZero = []() { return std::complex<float>(0, 0); };
 
 template <typename T>
 void Print(T x, int num, std::string msg = "") {

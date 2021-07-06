@@ -119,10 +119,18 @@ __global__ void Hadamard(cuFloatComplex *a, cuFloatComplex *b, int N) {
 void FftHelper::ExecFft(std::complex<float> *a, const int N, const int num_images) {
   dim3 blockDim(refft::FFTblocksize);
   dim3 gridDim(N/2/refft::FFTblocksize);
-  bitReverse<<<gridDim, blockDim>>>(a,N, num_images);
-  for (int i = 1; i < N; i *= 2) {
-    Fft<<<gridDim, blockDim>>>((cuFloatComplex *)a, i, N, num_images);
-    CudaCheckError();
+  {
+    CudaHostSync();
+    CudaTimer t("bitReversing_ours");
+    bitReverse<<<gridDim, blockDim>>>(a,N, num_images);
+  }
+  {
+    CudaHostSync();
+    CudaTimer t("Butterfly_ours");
+    for (int i = 1; i < N; i *= 2) {
+      Fft<<<gridDim, blockDim>>>((cuFloatComplex *)a, i, N, num_images);
+      CudaCheckError();
+    }
   }
   CudaCheckError();
 }
@@ -146,17 +154,12 @@ void FftHelper::Mult(std::complex<float> *a, std::complex<float> *b, int N) {
 
 void FftHelper::ExecCUFFT(std::complex<float> *a, const int N, const int num_images) {
   cufftHandle plan;
-  //int dim[1] = {N};
-  //cufftPlanMany(&plan,1,dim,NULL,1,1,NULL,1,1,CUFFT_C2C,num_images);
-  {
-    CudaTimer t("Planning");
   if(cufftPlan1d(&plan,N,CUFFT_C2C,num_images)!=CUFFT_SUCCESS){
     std::cout << "CUFFT ERROR : PLAN ERROR" << std::endl;
     return;
   }
-  }
   {
-    CudaTimer t("Execution");
+    CudaTimer t("CUFFT");
   if(cufftExecC2C(plan,(cuComplex *) a, (cuComplex *) a, CUFFT_FORWARD)!=CUFFT_SUCCESS){
     std::cout << "CUFFT ERROR : CUFFT ERROR" << std::endl;
     return;

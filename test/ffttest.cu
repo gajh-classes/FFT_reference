@@ -49,21 +49,14 @@ int main(int argc, char **argv){
         (std::complex<float>*)refft::DeviceMalloc(h_a); 
     refft::CudaHostSync();
     refft::FftHelper::ExecFft(d_alpha, N, num_images);
-    {
-      refft::CudaTimer t("CUFFT");
     refft::FftHelper::ExecCUFFT(d_alpha_ref, N, num_images);
-    }
     refft::CudaHostSync();
 
     ComplexVec res_ref = refft::D2H(d_alpha, input_size);
     ComplexVec res_cufft = refft::D2H(d_alpha_ref, input_size);
     refft::CudaHostSync();
-
     refft::FftHelper::ExecIfft(d_alpha, N, num_images);
-    {
-      refft::CudaTimer t("CUIFFT");
     refft::FftHelper::ExecCUIFFT(d_alpha_ref, N, num_images);
-    }
     refft::CudaHostSync();
 
     ComplexVec ires_ref = refft::D2H(d_alpha, N);
@@ -144,7 +137,10 @@ static void print_help(const char* prog_name) {
   printf("Options:\n");
   printf("  --fftb:  FFT  blocksize (default: 256 )\n");
   printf("  --ifftb: iFFT blocksize (default: 1024)\n");
-  printf("  ( c.f. gridsize = N/2/blocksize )\n\n");
+  printf("  ( c.f. gridsize = N/2/blocksize )\n");
+  printf("  --numiter : number of iteration for performance comparison\n");
+  printf("  --N : length of input sequence\n");
+  printf("  --numimags : the number of batching of input sequence\n\n");
   printf("  --help:  print help page \n");
 }
 
